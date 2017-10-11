@@ -41,16 +41,35 @@
 
                 <!-- Page Body -->
                 <div class="page-body">
-                    xxxx
-                </div>
-                
+                   <form class="form-horizontal" role="form" action="{:url('index/doupload')}"  enctype="multipart/form-data" method="post" id="uploadForm">
+                       <div class="form-group">
+                           <div class="col-sm-6">
+                               <input type="file" name="excel" id="file_excel" value="" onchange="select_file_excel()" style="display: none;">
+                           </div>
+                       </div>
+                       <div class="form-group">
+                           <div class="col-sm-offset-6 col-sm-10">
+                               <button type="button" class="btn btn-default"  onclick="file_excel()">上传execl</button>
+                           </div>
+                           
+                       </div>
+                       <div class="form-group">
+                           <div class="col-sm-offset-6 col-sm-10">
+                               <p class="help-block col-sm-12 red">文件类型必须为xlsx或者xls</p>
+                           </div>
+                           
+                       </div>
+                       
+                   </form>
 
+                </div>
                 </div>
                 <!-- /Page Body -->
             </div>
             <!-- /Page Content -->
 		</div>	
 	</div>
+
 
 	    <!--Basic Scripts-->
     <script src="__ADMIN_PUBLIC__/style/jquery_002.js"></script>
@@ -59,6 +78,44 @@
     <!--Beyond Scripts-->
     <script src="__ADMIN_PUBLIC__/style/beyond.js"></script>
     
+<script type="text/javascript">
+        
+//导入excel
+    function file_excel(){
+       $("#file_excel").click();
+    }
 
+    //选择文件
+    function select_file_excel() {
+
+        $.ajax({
+            url: "{:url('index/doupload')}",
+            type: 'POST',
+            cache: false,
+            data: new FormData($('#uploadForm')[0]),
+            dataType:'json',
+            processData: false,
+            contentType: false,
+            success:function(json){
+                console.log(json)
+                //清空内容
+                $("#file_excel").val('');
+
+                //返回提示信息
+                if(json.status == 200){
+                    alert(json.message);
+                    window.location.href="{:url('index/list')}";
+                }
+                if(json.status == 400){
+                    alert(json.message);
+                    window.location.href="{:url('index/index')}";
+
+                }
+            }
+        });
+    }
+
+
+</script>
 
 </body></html>
