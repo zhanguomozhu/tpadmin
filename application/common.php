@@ -25,3 +25,32 @@ function show($status,$message,$data=[])
 		'data' => $data,
 	]);
 }
+
+
+
+/**
+ * 用户数据加密       加密数据  
+ * 实现 显示信息部分用星号替换。
+ * echo jiami(18575559980,3,4);
+ */
+function jiami($data,$num,$numb){
+    $str = str_repeat("*",$numb);//替换字符数量
+    $re = substr_replace($data,$str,$num,$numb);
+    return $re;
+}
+
+
+
+/**
+ * 循环加密某一数组的某一字段
+ * @param  [type] $data  [description]
+ * @param  [type] $field [description]
+ * @return [type]        [description]
+ */
+function looparr($data,$field){
+	foreach ($data as $key => $value) {
+		$str = mb_strlen($value[$field])/2-1;
+		$data[$key][$field] = jiami($value[$field],$str,3);
+	}
+	return $data;
+}

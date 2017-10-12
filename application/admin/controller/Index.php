@@ -67,6 +67,10 @@ class Index extends Controller
 					$list[$k2]['total']=$v2[4];
 					$list[$k2]['yxtotal']=$v2[5];
 					$list[$k2]['result']=$v2[6];
+					$list[$k2]['tian']=date('z');
+					$list[$k2]['zhou']=date('W');
+					$list[$k2]['yue']=date('m');
+					$list[$k2]['nian']=date('Y');
 				}
 			}
 

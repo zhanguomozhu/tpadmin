@@ -10,58 +10,20 @@
                 <ul class="nav sidebar-menu">
                     <!--Dashboard-->
                     <li>
-                        <a href="#" class="menu-dropdown">
-                            <i class="menu-icon fa fa-asterisk"></i>
-                            <span class="menu-text">管理员</span>
+                        <a href="{:url('index/index')}" class="menu-dropdown">
+                            <i class="menu-icon fa fa-folder-o"></i>
+                            <span class="menu-text">导入excel</span>
                             <i class="menu-expand"></i>
-                        </a>
-                        <ul class="submenu">
-                            <li>
-                                <a href="{:url('Admin/lst')}">
-                                    <span class="menu-text">
-                                        管理列表                                    </span>
-                                    <i class="menu-expand"></i>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{:url('AuthGroup/lst')}">
-                                    <span class="menu-text">
-                                        角色管理                                    </span>
-                                    <i class="menu-expand"></i>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{:url('AuthRule/lst')}">
-                                    <span class="menu-text">
-                                        权限管理                                    </span>
-                                    <i class="menu-expand"></i>
-                                </a>
-                            </li>
-                        </ul>                            
-                    </li> 
-                    <li>
-                        <a href="#" class="menu-dropdown">
-                            <i class="menu-icon fa fa-user"></i>
-                            <span class="menu-text">用户管理</span>
-                            <i class="menu-expand"></i>
-                        </a>
-                        <ul class="submenu">
-                            <li>
-                                <a href="{:url('user/lst')}">
-                                    <span class="menu-text">
-                                        用户列表                                    </span>
-                                    <i class="menu-expand"></i>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{:url('user/is_del')}">
-                                    <span class="menu-text">
-                                        冻结用户                                    </span>
-                                    <i class="menu-expand"></i>
-                                </a>
-                            </li>
-                        </ul>                             
+                        </a>                           
                     </li>
+                    <li>
+                        <a href="{:url('lists/index')}" class="menu-dropdown">
+                            <i class="menu-icon fa  fa-tasks"></i>
+                            <span class="menu-text">列表管理</span>
+                            <i class="menu-expand"></i>
+                        </a>
+                    </li>  
+                   
                 </ul>
                 <!-- /Sidebar Menu -->
             </div>
