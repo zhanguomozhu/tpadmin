@@ -33,24 +33,41 @@ function show($status,$message,$data=[])
  * 实现 显示信息部分用星号替换。
  * echo jiami(18575559980,3,4);
  */
-function jiami($data,$num,$numb){
-    $str = str_repeat("*",$numb);//替换字符数量
-    $re = substr_replace($data,$str,$num,$numb);
-    return $re;
+/**
+ * 加密字符串
+ * @param  [type] $data [需要加密的字符串]
+ * @param  [type] $start  [起始数]
+ * @param  [type] $stop [结束位置]
+ * @param  [type] $num [加密字符串长度]
+ * @return [type]       [description]
+ */
+function jiami($data,$start,$stop,$num){
+	$str = mb_strlen($data);//字符串长度
+	if(!$num){
+		$num =  $str-$start+1-$stop;//加密长度
+	}
+    $rep = str_repeat("*",$num);//生成替换字符
+    $res = substr_replace($data,$rep,$start,$stop);
+    return $res;
 }
 
 
 
 /**
  * 循环加密某一数组的某一字段
- * @param  [type] $data  [description]
- * @param  [type] $field [description]
+ * @param  [type] $data  [需要处理的数组]
+ * @param  [type] $field [字段]
  * @return [type]        [description]
  */
 function looparr($data,$field){
-	foreach ($data as $key => $value) {
-		$str = mb_strlen($value[$field])/2-1;
-		$data[$key][$field] = jiami($value[$field],$str,3);
-	}
+		foreach ($data as $key => $value) {
+			//排名
+			$data[$key]['paiming'] = $key+1;
+			if(isset($field) && !empty($field)){
+				//从第3位加密到-3位，加密字符串3个长度
+				$data[$key][$field] = jiami($value[$field],3,-3,3);
+			}
+		}
+	
 	return $data;
 }

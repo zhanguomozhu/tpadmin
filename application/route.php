@@ -11,3 +11,4 @@
 
 use think\Route;
 Route::get('api/:act/:id','api/index/index',['domain'=>'tpadmin.com'],['act'=>'\w+','id'=>'\d+']);
+Route::get('ajax/:zhanghao','api/ajax/index',['domain'=>'tpadmin.com'],['zhanghao'=>'\w+']);

@@ -106,7 +106,6 @@ class Lists extends Controller
 			}
 			return;
 		}
-		dump(input('id'));
 		$data = model('cai')->find(input('id'));
 		return $this->fetch('',['data'=>$data]);
 	}

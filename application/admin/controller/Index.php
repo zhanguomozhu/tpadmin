@@ -5,7 +5,17 @@ class Index extends Controller
 {
 	public function index()
 	{
-		return $this->fetch();
+		$dd = date('Y-m-d H:i:s',time());//日期
+		//检查周期栏目是否包今天
+		
+		$res = model('cate')->get_time();
+		if($res){
+			$style = "";
+		}else{
+			$style = 'disabled';//禁止点击
+		}
+		
+		return $this->fetch('',['dd'=>$dd,'style'=>$style]);
 	}
 
 	public function doupload()
@@ -58,6 +68,17 @@ class Index extends Controller
 
 			//拼写插入数据库数据
 			$list = array();
+			$time = time();//当前时间戳
+			
+			//判断当前属于哪一个栏目
+			$cates = model('cate')->field('id,starttime,endtime')->select();
+			foreach ($cates as $key => $value) {
+				if($time>$value['starttime']  && $time<$value['endtime']){
+					$cate_id = $value['id'];
+				}
+			}
+
+
 			foreach ($data as $k1 => $v1) {
 
 				foreach ($v1 as $k2 => $v2) {
@@ -71,6 +92,7 @@ class Index extends Controller
 					$list[$k2]['zhou']=date('W');
 					$list[$k2]['yue']=date('m');
 					$list[$k2]['nian']=date('Y');
+					$list[$k2]['cate_id']=$cate_id;
 				}
 			}
 
