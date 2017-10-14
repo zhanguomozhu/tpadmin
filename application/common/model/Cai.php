@@ -147,107 +147,200 @@ class Cai extends Model
 	{
 		//最后记录时间
 		$last = model('cai')->field('tian,nian,cate_id')->order('id desc')->limit(1)->select();
-
+		//时间
+		$d = date('z');//日
+		$w = date('W');//周
+		$m = date('m');//月
+		$y = date('Y');//年
 		//排名
-		$dayData = $this->get_day(date('z'),50,'');//日排名信息
-		$zhouData = $this->get_zhou(date('W'),200,'');//周排名信息
-		$yueData = $this->get_yue(date('m'),300,'');//月排名信息
-		$nianData = $this->get_nian(date('Y'),500,'');//年排名信息
-
-
-
-
-		//***********************************************************查询日记录
-		$data = [
-			'tian'=>['in',[date('z'),date('z')-1]],//查询两天
-			'zhanghao'=>['eq',$zhanghao],
-		];
-		$res['day'] = $this->where($data)->field('zhanghao,SUM(yxtotal) total,tian,nian')->group('tian')->order('tian desc')->select();
+		$dayData = $this->get_day($d,50,'');//日排名信息
+		$ydayData = $this->get_day($d-1,50,'');//上一日排名信息
+		$zhouData = $this->get_zhou($w,200,'');//周排名信息
+		$yzhouData = $this->get_zhou($w-1,200,'');//上一周排名信息
+		$yueData = $this->get_yue($m,300,'');//月排名信息
+		$yyueData = $this->get_yue($m-1,300,'');//上一月排名信息
+		$nianData = $this->get_nian($y,500,'');//年排名信息
 		
-		//格式化时间
-		foreach ($res['day'] as $key => $value) {
-			$res['day'][$key]['cate'] = $this->format_day($value['tian'],$value['nian']);
-			$res['day'][$key]['paiming'] = $this->get_paiming($dayData,$value['zhanghao']); 
-			unset($res['day'][$key]['tian']);
-			unset($res['day'][$key]['nian']);
-		}
+
+		//***********************************************************************************************************查日年记录
 		//没有记录
-		if(!$res['day']){
-			$res['day'] = ['zhanghao'=>$zhanghao,'total'=>'没有投注','paiming'=>'未进入排名','tian'=>$this->format_day($last[0]['tian'],$last[0]['nian'])];
-		}
-
-
-
-		//***********************************************************查询周记录
-		$data = [
-			'zhou'=>['in',[date('W'),date('W')-1]],//查询两周
-			'zhanghao'=>['eq',$zhanghao],
-		];
-		$res['zhou'] = $this->where($data)->field('zhanghao,SUM(yxtotal) total,zhou,cate_id')->group('zhou')->order('zhou desc')->select();
-
-		//格式化时间
-		foreach ($res['zhou'] as $key => $value) {
-			$res['zhou'][$key]['cate'] = $this->format_zhou($value['cate_id']);
-			$res['zhou'][$key]['paiming'] = $this->get_paiming($zhouData,$value['zhanghao']);
-			unset($value['zhou']);
-			unset($value['cate_id']);
-		}
-
-		//没有记录
-		if(!$res['zhou']){
-			$res['zhou'] = ['zhanghao'=>$zhanghao,'total'=>'没有投注','paiming'=>'未进入排名','tian'=>$this->format_zhou($last[0]['cate_id'])];
-		}
-
-
-
-
-
-		//************************************************************查询月记录
-		$data = [
-			'yue'=>['in',[date('m'),date('m')-1]],//查询两月
-			'zhanghao'=>['eq',$zhanghao],
-		];
-		$res['yue'] = $this->where($data)->field('zhanghao,SUM(yxtotal) total,yue,cate_id')->group('yue')->order('yue desc')->select();
-
-		//格式化时间
-		foreach ($res['yue'] as $key => $value) {
-			$res['yue'][$key]['cate'] = $this->format_yue($value['cate_id']);
-			$res['yue'][$key]['paiming'] = $this->get_paiming($yueData,$value['zhanghao']); 
-			unset($value['yue']);
-			unset($value['cate_id']);
-		}
-
-		//没有记录
-		if(!$res['yue']){
-			$res['yue'] = ['zhanghao'=>$zhanghao,'total'=>'没有投注','paiming'=>'未进入排名','tian'=>$this->format_yue($last[0]['cate_id'])];
+		if(!$dayData){//**********************************************当天没有数据
+			//当天
+			$res['day'][] = $this->find_day('',$zhanghao,$d,$y);
+			//前一天
+			if(!$ydayData){//前一天没有数据
+				$res['day'][] = $this->find_day('',$zhanghao,$d-1,$y);
+			}else{//前一天有数据
+			    //获取排名
+				foreach ($ydayData as $key => $value) {
+					$paiming= $this->get_paiming($ydayData,$zhanghao); 
+				}
+				$res['day'][] = $this->find_day($paiming,$zhanghao,$d-1,$y);
+			}
+		}else{//*********************************************************当天有数据
+			//当天
+			$paiming= $this->get_paiming($dayData,$zhanghao); 
+			$res['day'][] = $this->find_day($paiming,$zhanghao,$d,$y);
+			//上一周
+			$paiming1= $this->get_paiming($ydayData,$zhanghao);
+			$res['day'][] = $this->find_day($paiming1,$zhanghao,$d-1,$y); 
+			dump($res);
 		}
 
 
 
 
 
-		//**************************************************************查询年记录
-		$data = [
-			'nian'=>['in',[date('Y'),date('Y')-1]],//查询两月
-			'zhanghao'=>['eq',$zhanghao],
-		];
-		$res['nian'] = $this->where($data)->field('zhanghao,SUM(yxtotal) total,nian,cate_id')->group('nian')->order('nian desc')->select();
-
-		//格式化时间
-		foreach ($res['nian'] as $key => $value) {
-			$res['nian'][$key]['cate'] = $this->format_nian($value['cate_id']);
-			$res['nian'][$key]['paiming'] = $this->get_paiming($nianData,$value['zhanghao']); 
-			unset($value['nian']);
-			unset($value['cate_id']);
+		//***********************************************************************************************************查询周记录
+		if(!$zhouData){//**********************************************当周没有数据
+			//当周
+			$res['zhou'][]=$this->find_zhou('',$zhanghao,$w,$y);
+			//前一周
+			if(!$ydayData){//前一周没有数据
+				$res['zhou'][]=$this->find_zhou('',$zhanghao,$w-1,$y);
+			}else{//前一周有数据
+			    //获取排名
+				foreach ($yzhouData as $key => $value) {
+					$paiming= $this->get_paiming($yzhouData,$zhanghao); 
+				}
+				$res['zhou'][]=$this->find_zhou($paiming,$zhanghao,$w-1,$y);
+			}
+		}else{
+			//***********************************************************当周有数据
+			//当前周
+			$paiming= $this->get_paiming($zhouData,$zhanghao); 
+			$res['zhou'][]=$this->find_zhou($paiming,$zhanghao,$w,$y);
+			
+			
+			//上一周
+			$paiming1= $this->get_paiming($yzhouData,$zhanghao); 
+			$res['zhou'][]=$this->find_zhou($paiming1,$zhanghao,$w-1,$y);
 		}
 
-		//没有记录
-		if(!$res['nian']){
-			$res['nian'] = ['zhanghao'=>$zhanghao,'total'=>'没有投注','paiming'=>'未进入排名','tian'=>$this->format_nian($last[0]['cate_id'])];
+
+
+
+
+		//***********************************************************************************************************查询月记录
+		if(!$yueData){//**********************************************当月没有数据
+			//当月
+			$res['yue'][]=$this->find_yue($paiming,$zhanghao,$d,$y);
+			//下一月
+			if(!$yyueData){//下一月没有数据
+				$res['yue'][]=$this->find_yue($paiming,$zhanghao,$d-30,$y);
+			}else{//下一月有数据
+			    //获取排名
+				foreach ($yyueData as $key => $value) {
+					$paiming= $this->get_paiming($yyueData,$zhanghao); 
+				}
+				$res['yue'][]=$this->find_yue($paiming,$zhanghao,$d-30,$y);
+				
+			}
+		}else{
+			//**********************************************************当月有数据
+			//当前月
+			$paiming= $this->get_paiming($yueData,$zhanghao);
+			$res['yue'][]=$this->find_yue($paiming,$zhanghao,$d,$y);
+			
+			//上一月
+			$paiming1= $this->get_paiming($yyueData,$zhanghao); 
+			$res['yue'][]=$this->find_yue($paiming1,$zhanghao,$d-30,$y);
+		
+
 		}
 
+
+
+
+
+		//***********************************************************************************************************查询年记录
+		if(!$nianData){//**********************************************当年没有数据
+			$res['yue'][]=$this->find_nian('',$zhanghao);
+		}else{//*******************************************************当年有数据
+			//格式化时间
+			$paiming= $this->get_paiming($nianData,$zhanghao); 
+			$res['yue'][]=$this->find_nian($paiming,$zhanghao);
+
+		}
 		return $res;
 	}
+
+
+	/**
+	 * 获取天排名
+	 * @return [type] [description]
+	 */
+	private function find_day($day_paiming,$zhanghao,$d,$y){
+		if(!$day_paiming){//当日没有数据
+			$res = ['zhanghao'=>$zhanghao,'total'=>'没有投注','paiming'=>'未进入排名','cate'=>$this->format_day($d,$y)];
+		}else{//当日有数据
+			$res['zhanghao'] = $day_paiming['zhanghao'];
+			$res['total'] = $day_paiming['total'];
+			$res['paiming'] = $day_paiming['paiming'];
+			$res['cate']=$this->format_day($d,$y);
+		}
+		return $res;
+	}
+
+	/**
+	 * 获取周排名
+	 * @param  [type] $zhou [description]
+	 * @return [type]       [description]
+	 */
+	private function find_zhou($zhou_paiming,$zhanghao,$w,$y){
+		if(!$zhou_paiming){//当周没有数据
+			$res= ['zhanghao'=>$zhanghao,'total'=>'没有投注','paiming'=>'未进入排名','cate'=>$this->format_zhou($w,$y)];
+		}else{//当周有数据
+			$res['zhanghao'] = $zhou_paiming['zhanghao'];
+			$res['total'] = $zhou_paiming['total'];
+			$res['paiming'] = $zhou_paiming['paiming'];
+			$res['cate'] = $this->format_zhou($w,$y);
+		}
+		return $res;
+	}
+
+	/**
+	 * 获取月排名
+	 * @param  [type] $yue [description]
+	 * @return [type]      [description]
+	 */
+	private function find_yue($yue_paiming,$zhanghao,$d,$y){
+		if(!$yue_paiming){//当周没有数据
+			$res= ['zhanghao'=>$zhanghao,'total'=>'没有投注','paiming'=>'未进入排名','cate'=>$this->format_yue($d,$y)];
+		}else{//当周有数据
+			$res['zhanghao'] = $yue_paiming['zhanghao'];
+			$res['total'] = $yue_paiming['total'];
+			$res['paiming'] = $yue_paiming['paiming'];
+			$res['cate'] = $this->format_yue($d,$y);
+		}
+		return $res;
+	}
+
+	/**
+	 * 获取年排名
+	 * @param  [type] $nian [description]
+	 * @return [type]       [description]
+	 */
+	private function find_nian($nian_paiming,$zhanghao){
+		if(!$nian_paiming){//当年没有数据
+			$res = ['zhanghao'=>$zhanghao,'total'=>'没有投注','paiming'=>'未进入排名','cate'=>$this->format_nian()];
+		}else{//当年没有数据
+			$res['zhanghao'] = $nian_paiming['zhanghao'];
+			$res['total'] = $nian_paiming['total'];
+			$res['paiming'] = $nian_paiming['paiming'];
+			$res['cate'] = $this->format_nian();
+		}
+		return $res;
+	}
+
+
+
+
+
+
+
+
+
 
 	/**
 	 * 格式化天
@@ -265,8 +358,18 @@ class Cai extends Model
 	 * @param  [type] $zhou [description]
 	 * @return [type]       [description]
 	 */
-	private function format_zhou($cate_id){
-		$res = model('cate')->field('name')->find(['id'=>$cate_id,'level'=>2]);//周
+	private function format_zhou($w,$y){
+		$dayNumber = $w * 7;  
+	    $weekDayNumber = date("w", mktime(0, 0, 0, 1, $dayNumber, $y));//当前周的第几天  
+	    $startNumber = $dayNumber - $weekDayNumber;  
+	    $starttime = mktime(0, 0, 0, 1, $startNumber + 1, $y);//开始日期  
+	    $endtime =  mktime(23, 59, 59, 1, $startNumber + 7, $y);//结束日期   
+		$data=[
+			'starttime'=>['elt',$starttime],
+			'endtime'=>['egt',$endtime],
+			'level'=>2
+		];
+		$res = model('cate')->where($data)->field('name')->find();//周
 		return $res['name'];
 	}
 
@@ -275,11 +378,15 @@ class Cai extends Model
 	 * @param  [type] $yue [description]
 	 * @return [type]      [description]
 	 */
-	private function format_yue($cate_id){
-		//父id
-		$res = model('cate')->field('pid')->find(['id'=>$cate_id,'level'=>2]);//周
-		$res1 = model('cate')->field('name')->find(['id'=>$res['pid'],'level'=>1]);//月
-		return $res1['name'];
+	private function format_yue($d,$y){
+		$time = mktime(0,0,0,1,$d,$y);//当前时间
+		$data=[
+			'starttime'=>['elt',$time],
+			'endtime'=>['egt',$time],
+			'level'=>1
+		];
+		$res = model('cate')->where($data)->field('name')->find();//月
+		return $res['name'];
 	}
 
 	/**
@@ -287,12 +394,15 @@ class Cai extends Model
 	 * @param  [type] $nian [description]
 	 * @return [type]       [description]
 	 */
-	private function format_nian($cate_id){
-		//父id
-		$res = model('cate')->field('pid')->find(['id'=>$cate_id,'level'=>2]);//周
-		$res1 = model('cate')->field('pid')->find(['id'=>$res['pid'],'level'=>1]);//月
-		$res2 = model('cate')->field('name')->find(['id'=>$res1['pid'],'level'=>0]);//年
-		return $res2['name'];
+	private function format_nian(){
+		$time = time();//当前时间
+		$data=[
+			'starttime'=>['elt',$time],
+			'endtime'=>['egt',$time],
+			'level'=>0
+		];
+		$res = model('cate')->where($data)->field('name')->find();//年
+		return $res['name'];
 	}
 
 
@@ -303,12 +413,13 @@ class Cai extends Model
 	 * @return [type]       [description]
 	 */
 	private function get_paiming($data,$name){
+		$res = [];
 		foreach ($data as $key => $value) {
 			if($value['zhanghao'] == $name){
-				$paiming = $value['paiming'];
+				$res = $value;
 			}
 		}
-		return $paiming;
+		return $res;
 	}
 
 	

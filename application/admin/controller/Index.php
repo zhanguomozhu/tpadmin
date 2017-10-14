@@ -71,38 +71,60 @@ class Index extends Controller
 			$time = time();//当前时间戳
 			
 			//判断当前属于哪一个栏目
-			$cates = model('cate')->field('id,starttime,endtime')->select();
+			$cates = model('cate')->where('level',2)->field('id,starttime,endtime')->select();
 			foreach ($cates as $key => $value) {
 				if($time>$value['starttime']  && $time<$value['endtime']){
 					$cate_id = $value['id'];
 				}
 			}
 
+			if($cate_id){
+				foreach ($data as $k1 => $v1) {
 
-			foreach ($data as $k1 => $v1) {
-
-				foreach ($v1 as $k2 => $v2) {
-					$list[$k2]['zhantai']=$v2[1];
-					$list[$k2]['zhanghao']=$v2[2];
-					$list[$k2]['num']=$v2[3];
-					$list[$k2]['total']=$v2[4];
-					$list[$k2]['yxtotal']=$v2[5];
-					$list[$k2]['result']=$v2[6];
-					$list[$k2]['tian']=date('z');
-					$list[$k2]['zhou']=date('W');
-					$list[$k2]['yue']=date('m');
-					$list[$k2]['nian']=date('Y');
-					$list[$k2]['cate_id']=$cate_id;
+					foreach ($v1 as $k2 => $v2) {
+						$list[$k2]['zhantai']=$v2[1];
+						$list[$k2]['zhanghao']=$v2[2];
+						$list[$k2]['num']=$v2[3];
+						$list[$k2]['total']=$v2[4];
+						$list[$k2]['yxtotal']=$v2[5];
+						$list[$k2]['result']=$v2[6];
+						$list[$k2]['tian']=date('z');
+						$list[$k2]['zhou']=date('W');
+						$list[$k2]['yue']=date('m');
+						$list[$k2]['nian']=date('Y');
+						$list[$k2]['cate_id']=$cate_id;
+					}
 				}
-			}
+				
+				//当前时间
+				$time = date("Y年m月d日",time());
 
+				//修改栏目名称
+				$cate_zhou = model('cate')->field('id,name,pid')->find(['id'=>$cate_id]);
+				$cate_yue = model('cate')->field('id,name,pid')->find(['id'=>$cate_zhou['pid']]);
+				$cate_nian = model('cate')->field('id,name,pid')->find(['id'=>$cate_yue['pid']]);
+				$pattern = '/(?:\()(.*)(?:\))/';  //匹配（）
+				$replacement = '(更新至'.$time.')';  
+				$zhou =preg_replace($pattern, $replacement,$cate_zhou['name']); //替换的周字符串
+				$yue =preg_replace($pattern, $replacement,$cate_yue['name']); 	//月
+				$nian =preg_replace($pattern, $replacement,$cate_nian['name']); //年
 
-			//插入数据库
-			$result = model('cai')->add_all($list);
-			if($result){
-				echo show(200,'导入数据成功');
-			}else{
-				echo show(400,'导入数据失败,清重试');
+				$res_zhou = model('cate')->save_one(['name'=>$zhou],$cate_zhou['id']);	//修改周
+				$res_yue = model('cate')->save_one(['name'=>$yue],$cate_yue['id']);	//修改月
+				$res_nian = model('cate')->save_one(['name'=>$nian],$cate_nian['id']);	//修改年
+
+				if(!$res_zhou && !$res_yue && !$res_nian){
+					echo show(400,'修改栏目失败，请重新上传');
+				}else{
+					//插入数据库
+					$result = model('cai')->add_all($list);
+					if($result){
+						echo show(200,'导入数据成功');
+					}else{
+						echo show(400,'导入数据失败,清重试');
+					}
+				}
+				
 			}
 		}else{
 			 echo show(400,'导入数据失败,,清重试');
