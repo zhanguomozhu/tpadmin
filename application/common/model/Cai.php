@@ -184,7 +184,6 @@ class Cai extends Model
 			//上一周
 			$paiming1= $this->get_paiming($ydayData,$zhanghao);
 			$res['day'][] = $this->find_day($paiming1,$zhanghao,$d-1,$y); 
-			dump($res);
 		}
 
 
@@ -255,11 +254,11 @@ class Cai extends Model
 
 		//***********************************************************************************************************查询年记录
 		if(!$nianData){//**********************************************当年没有数据
-			$res['yue'][]=$this->find_nian('',$zhanghao);
+			$res['nian'][]=$this->find_nian('',$zhanghao);
 		}else{//*******************************************************当年有数据
 			//格式化时间
 			$paiming= $this->get_paiming($nianData,$zhanghao); 
-			$res['yue'][]=$this->find_nian($paiming,$zhanghao);
+			$res['nian'][]=$this->find_nian($paiming,$zhanghao);
 
 		}
 		return $res;
@@ -346,7 +345,7 @@ class Cai extends Model
 	 * 格式化天
 	 * @return [type] [description]
 	 */
-	private function format_day($day,$nian){
+	public function format_day($day,$nian){
 
 		$today = mktime(0,0,0,1,1,$nian)+$day*86400;
 		$res = date("Y年m月d日",$today);
